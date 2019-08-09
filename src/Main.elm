@@ -6,20 +6,22 @@ import Task exposing (Task)
 import Time exposing (utc)
 
 
-init : () -> ( Model, Cmd Msg )
-init _ =
-    ( { time = Nothing }
-    , Task.perform Tick Time.now
-    )
-
-
 type alias Model =
     { time : Maybe Time.Posix
+    , zone : Time.Zone
     }
 
 
 type Msg
     = Tick Time.Posix
+    | AdjustTimezone Time.Zone
+
+
+init : () -> ( Model, Cmd Msg )
+init _ =
+    ( { time = Nothing, zone = Time.utc }
+    , Task.perform AdjustTimezone Time.here
+    )
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -27,6 +29,11 @@ update msg model =
     case msg of
         Tick newTime ->
             ( { model | time = Just newTime }
+            , Cmd.none
+            )
+
+        AdjustTimezone newZone ->
+            ( { model | zone = newZone }
             , Cmd.none
             )
 
@@ -39,13 +46,13 @@ view model =
             ( hour, minute, second ) =
                 case model.time of
                     Just time ->
-                        ( Time.toHour utc time
+                        ( Time.toHour model.zone time
                             |> String.fromInt
                             |> String.padLeft 2 '0'
-                        , Time.toMinute utc time
+                        , Time.toMinute model.zone time
                             |> String.fromInt
                             |> String.padLeft 2 '0'
-                        , Time.toSecond utc time
+                        , Time.toSecond model.zone time
                             |> String.fromInt
                             |> String.padLeft 2 '0'
                         )
