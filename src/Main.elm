@@ -44,24 +44,33 @@ view model =
     , body =
         let
             ( hour, minute, second ) =
-                case model.time of
-                    Just time ->
-                        ( Time.toHour model.zone time
-                            |> String.fromInt
-                            |> String.padLeft 2 '0'
-                        , Time.toMinute model.zone time
-                            |> String.fromInt
-                            |> String.padLeft 2 '0'
-                        , Time.toSecond model.zone time
-                            |> String.fromInt
-                            |> String.padLeft 2 '0'
-                        )
-
-                    Nothing ->
-                        ( "", "", "" )
+                currentTime model.time model.zone
         in
         [ h1 [] [ text (hour ++ ":" ++ minute ++ ":" ++ second) ] ]
     }
+
+
+currentTime : Maybe Time.Posix -> Time.Zone -> ( String, String, String )
+currentTime time zone =
+    let
+        ( hour, minute, second ) =
+            case time of
+                Just now ->
+                    ( Time.toHour zone now
+                        |> String.fromInt
+                        |> String.padLeft 2 '0'
+                    , Time.toMinute zone now
+                        |> String.fromInt
+                        |> String.padLeft 2 '0'
+                    , Time.toSecond zone now
+                        |> String.fromInt
+                        |> String.padLeft 2 '0'
+                    )
+
+                Nothing ->
+                    ( "", "", "" )
+    in
+    ( hour, minute, second )
 
 
 subscriptions : Model -> Sub Msg
